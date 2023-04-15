@@ -42,5 +42,32 @@ CHIP ALU {
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-   // Put you code here:
+    // ref: https://www.youtube.com/watch?v=3bgMUGdGcBU
+
+        Mux16(a[0..15]=x, b[0..15]=false, sel=zx, out[0..15]=zxout);
+        Not16(in[0..15]=zxout, out[0..15]=notx);
+        Mux16(a[0..15]=zxout, b[0..15]=notx, sel=nx, out[0..15]=nxout);
+
+        Mux16(a[0..15]=y, b[0..15]=false, sel=zy, out[0..15]=zyout);
+        Not16(in[0..15]=zyout, out[0..15]=noty);
+        Mux16(a[0..15]=zyout, b[0..15]=noty, sel=ny, out[0..15]=nyout);
+
+        And16(a[0..15]=nxout, b[0..15]=nyout, out[0..15]=aandb);
+        Add16(a[0..15]=nxout, b[0..15]=nyout, out[0..15]=aaddb);
+        Mux16(a[0..15]=aandb, b[0..15]=aaddb , sel=f, out=fout);
+        Not16(in[0..15]=fout, out[0..15]=notfout);
+
+        Mux16(
+                a[0..15]=fout, 
+                b[0..15]=notfout, 
+                sel=no, 
+                out[0..7]=lower, 
+                out[8..15]=upper, 
+                out[15]=ng, 
+                out=out);
+        
+        Or8Way(in[0..7]=lower, out=orlower);
+        Or8Way(in[0..7]=upper, out=orupper);
+        Or(a=orlower, b=orupper, out=prezr);
+        Not(in=prezr, out=zr);
 }
