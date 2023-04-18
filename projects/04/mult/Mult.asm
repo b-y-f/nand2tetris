@@ -9,4 +9,72 @@
 // This program only needs to handle arguments that satisfy
 // R0 >= 0, R1 >= 0, and R0*R1 < 32768.
 
-// Put your code here.
+// i = 0
+// sum = 0
+// LOOP:
+//     if (i < 1) goto STOP
+//     sum = sum + R1
+//     i = i - 1 
+//     goto LOOP
+// STOP:
+//     R2 = sum
+
+// Initialize variables
+@0
+D=M
+@R0
+M=D
+@1
+D=M
+@R1
+M=D
+@2
+M=0
+
+// i = a
+@R0
+D=M
+@i
+M=D
+
+// sum = 0
+@sum
+M=0
+
+// LOOP:
+(LOOP)
+    // if (i == 0) goto STOP
+    @i
+    D=M
+    @STOP
+    D;JEQ
+
+    // sum = sum + b
+    @sum
+    D=M
+    @R1
+    D=D+M
+    @sum
+    M=D
+
+    // i = i - 1
+    @i
+    M=M-1
+
+    // goto LOOP
+    @LOOP
+    0;JMP
+
+// STOP:
+(STOP)
+    // R2 = sum
+    @sum
+    D=M
+    @R2
+    M=D
+
+// END:
+(END)
+    @END
+    0;JMP
+
