@@ -65,14 +65,33 @@ def parse_instruction(instruction: str) -> tuple:
     return dest.strip(), comp.strip(), jump.strip()
 
 
+var_symbol = {}
+
+def add_key(d, key):
+    d[key] = d.get(max(d.keys(), default=15), 15) + 1
+    return d
+
+
 def parse_line(line, cache):
     if is_typeA(line):
         # tranlate to 16 bit
         var = line[1:]
+        if var.isnumeric():
+            bin_ = bin(int(var))[2:].zfill(16)
+            print(bin_)
+            return bin_
+
         if var in SYMBOLS.symbols:
             var = SYMBOLS.symbols[var]
         elif var in cache:
             var = cache[var]
+        else:
+            if var not in var_symbol:
+                add_key(var_symbol, var)
+                var = var_symbol[var]
+            else:
+                var = var_symbol[var]
+
 
         bin_ = bin(int(var))[2:].zfill(16)
         print(bin_)
@@ -91,6 +110,7 @@ def parse_file(file):
     lines = load_asm_and_clean(file)
     output = []
     lines, cache = save_labels(lines)
+    # save user defined var symbols
 
     for l in lines:
         parse_line(l, cache)
@@ -111,7 +131,7 @@ def save_labels(lines):
     return new_lines,cache
 
 def main():
-    file = './max/Max.asm'
+    file = './rect/rect.asm'
     output = parse_file(file)
     for line in output:
         print(line)
