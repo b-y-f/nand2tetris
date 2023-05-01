@@ -4,6 +4,8 @@ import sys
 import symbol_table as SYMBOLS
 
 
+var_symbol = {}
+
 def load_asm_and_clean(file):
     """
     This function loads an assembly file, removes empty lines and comments, and returns a list of pure
@@ -65,7 +67,8 @@ def parse_instruction(instruction: str) -> tuple:
     return dest.strip(), comp.strip(), jump.strip()
 
 
-var_symbol = {}
+
+
 
 def add_key(d, key):
     d[key] = d.get(max(d.keys(), default=15), 15) + 1
@@ -78,7 +81,6 @@ def parse_line(line, cache):
         var = line[1:]
         if var.isnumeric():
             bin_ = bin(int(var))[2:].zfill(16)
-            print(bin_)
             return bin_
 
         if var in SYMBOLS.symbols:
@@ -86,15 +88,14 @@ def parse_line(line, cache):
         elif var in cache:
             var = cache[var]
         else:
+            # save user defined var symbols
             if var not in var_symbol:
                 add_key(var_symbol, var)
                 var = var_symbol[var]
             else:
                 var = var_symbol[var]
 
-
         bin_ = bin(int(var))[2:].zfill(16)
-        print(bin_)
         return bin_
     else:
         # C instruction
@@ -102,7 +103,6 @@ def parse_line(line, cache):
         bin_code = "".join(
             ["111", SYMBOLS.comp[comp], SYMBOLS.dest[dest], SYMBOLS.jump[jump]]
         )
-        print(bin_code)
         return bin_code
 
 
@@ -110,30 +110,32 @@ def parse_file(file):
     lines = load_asm_and_clean(file)
     output = []
     lines, cache = save_labels(lines)
-    # save user defined var symbols
 
     for l in lines:
-        parse_line(l, cache)
-
+        output.append(parse_line(l, cache))
     return output
 
+
 def save_labels(lines):
-    cache = {}
+    label_cache = {}
     new_lines = []
     for idx, line in enumerate(lines):
-        if line.startswith('(') and line.endswith(')'):
+        if line.startswith("(") and line.endswith(")"):
             label = line[1:-1]
-            cache[label] = idx
+            label_cache[label] = idx
         else:
             new_lines.append(line)
-    
-    cache = {k: v - i for i, (k, v) in enumerate(cache.items())}
-    return new_lines,cache
+
+    label_cache = {k: v - i for i, (k, v) in enumerate(label_cache.items())}
+    return new_lines, label_cache
+
 
 def main():
-    file = './rect/rect.asm'
+    file = sys.argv[1]
     output = parse_file(file)
-    for line in output:
-        print(line)
+    with open(f"{file}.hack", "w") as file:
+        for item in output:
+            file.write(f"{item}\n")
+
 
 main()
