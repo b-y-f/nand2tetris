@@ -3,6 +3,7 @@
 import sys
 import symbol_table as SYMBOLS
 
+
 def load_asm_and_clean():
     """
     This function loads an assembly file, removes empty lines and comments, and returns a list of pure
@@ -10,12 +11,12 @@ def load_asm_and_clean():
     :return: The function `load_asm_and_clean()` is returning a list of strings that represent the pure
     code lines of an assembly file with comments and empty lines removed.
     """
-    with open(sys.argv[1], 'r') as file:
+    with open(sys.argv[1], "r") as file:
         lines = file.readlines()
 
     pure_code_lines = []
     for line in lines:
-        if line != '\n':
+        if line != "\n":
             comment_index = line.find("//")
             if comment_index == -1:
                 pure_code_lines.append(line.strip())
@@ -25,19 +26,21 @@ def load_asm_and_clean():
     # print(pure_code_lines)
     return pure_code_lines
 
-def is_typeA(instruction:str)->bool:
+
+def is_typeA(instruction: str) -> bool:
     """Returns the current instruction type (constant):
-    A_INSTRUCTION for @ xxx, where xxx is either a decimal number or a symbol 
+    A_INSTRUCTION for @ xxx, where xxx is either a decimal number or a symbol
     C_INSTRUCTION for dest = comp ; jump
     L_INSTRUCTION for (label)
     """
     return "@" in instruction
 
+
 def parse_instruction(instruction: str) -> tuple:
     """
     This function takes in a string instruction and parses it to extract the C symbol, which consists of
     the destination, computation, and jump components.
-    
+
     :param instruction: The parameter `instruction` is a string representing a single line of an
     assembly language instruction in the Hack computer architecture
     :type instruction: str
@@ -60,7 +63,7 @@ def parse_instruction(instruction: str) -> tuple:
 
     # print(dest, comp, jump)
     return dest.strip(), comp.strip(), jump.strip()
-    
+
 
 def parse_line(line):
     if line in SYMBOLS.symbols:
@@ -74,11 +77,13 @@ def parse_line(line):
     else:
         # C instruction
         dest, comp, jump = parse_instruction(line)
-        bin_code = "".join(["111", SYMBOLS.comp[comp], SYMBOLS.dest[dest],SYMBOLS.jump[jump]])
+        bin_code = "".join(
+            ["111", SYMBOLS.comp[comp], SYMBOLS.dest[dest], SYMBOLS.jump[jump]]
+        )
         print(bin_code)
         return bin_code
-        
+
+
 lines = load_asm_and_clean()
 for l in lines:
     parse_line(l)
-
