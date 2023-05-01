@@ -1,10 +1,15 @@
 # Use: python app.py xxx.asm -> new file created includes 16bit binary code
 
-import re
 import sys
-import symbol_table as symbols
+import symbol_table as SYMBOLS
 
 def load_asm_and_clean():
+    """
+    This function loads an assembly file, removes empty lines and comments, and returns a list of pure
+    code lines.
+    :return: The function `load_asm_and_clean()` is returning a list of strings that represent the pure
+    code lines of an assembly file with comments and empty lines removed.
+    """
     with open(sys.argv[1], 'r') as file:
         lines = file.readlines()
 
@@ -20,42 +25,60 @@ def load_asm_and_clean():
     # print(pure_code_lines)
     return pure_code_lines
 
-def instruction_type():
+def is_typeA(instruction:str)->bool:
     """Returns the current instruction type (constant):
     A_INSTRUCTION for @ xxx, where xxx is either a decimal number or a symbol 
     C_INSTRUCTION for dest = comp ; jump
     L_INSTRUCTION for (label)
     """
-    pass
+    return "@" in instruction
 
-def symbol(): 
-    # Returns the instruction’s symbol (string) 
-    pass
-def dest(): 
-    # Returns the instruction’s dest field (string) 
-    pass
+def parse_instruction(instruction: str) -> tuple:
+    """
+    This function takes in a string instruction and parses it to extract the C symbol, which consists of
+    the destination, computation, and jump components.
     
-def comp(): 
-    # Returns the instruction’s comp field (string) 
-    pass
-def jump(): 
-    # Returns the instruction’s jump field (string)
-    pass
+    :param instruction: The parameter `instruction` is a string representing a single line of an
+    assembly language instruction in the Hack computer architecture
+    :type instruction: str
+    :return: The function `parse_instruction` is returning a tuple containing three strings: the
+    destination (dest), computation (comp), and jump (jump) parts of the input instruction string. The
+    strings are stripped of any leading or trailing whitespace before being returned.
+    """
+    dest = ""
+    comp = ""
+    jump = ""
+
+    # Check for '=' and ';' and split the string accordingly
+    if "=" in instruction and ";" in instruction:
+        dest, rest = instruction.split("=", 1)
+        comp, jump = rest.split(";", 1)
+    elif "=" in instruction:
+        dest, comp = instruction.split("=", 1)
+    elif ";" in instruction:
+        comp, jump = instruction.split(";", 1)
+
+    # print(dest, comp, jump)
+    return dest.strip(), comp.strip(), jump.strip()
+    
 
 def parse_line(line):
-    if line in symbols:
+    if line in SYMBOLS.symbols:
         pass
 
-    first_char = line[0]
-    if first_char == '@':
+    if is_typeA(line):
         # tranlate to 16 bit
         bin_ = bin(int(line[1:]))[2:].zfill(16)
         print(bin_)
         return bin_
+    else:
+        # C instruction
+        dest, comp, jump = parse_instruction(line)
+        bin_code = "".join(["111", SYMBOLS.comp[comp], SYMBOLS.dest[dest],SYMBOLS.jump[jump]])
+        print(bin_code)
+        return bin_code
         
 lines = load_asm_and_clean()
-
 for l in lines:
     parse_line(l)
-    break
 
