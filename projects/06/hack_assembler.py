@@ -4,14 +4,14 @@ import sys
 import symbol_table as SYMBOLS
 
 
-def load_asm_and_clean():
+def load_asm_and_clean(file):
     """
     This function loads an assembly file, removes empty lines and comments, and returns a list of pure
     code lines.
     :return: The function `load_asm_and_clean()` is returning a list of strings that represent the pure
     code lines of an assembly file with comments and empty lines removed.
     """
-    with open(sys.argv[1], "r") as file:
+    with open(file, "r") as file:
         lines = file.readlines()
 
     pure_code_lines = []
@@ -65,13 +65,16 @@ def parse_instruction(instruction: str) -> tuple:
     return dest.strip(), comp.strip(), jump.strip()
 
 
-def parse_line(line):
-    if line in SYMBOLS.symbols:
-        pass
-
+def parse_line(line, cache):
     if is_typeA(line):
         # tranlate to 16 bit
-        bin_ = bin(int(line[1:]))[2:].zfill(16)
+        var = line[1:]
+        if var in SYMBOLS.symbols:
+            var = SYMBOLS.symbols[var]
+        elif var in cache:
+            var = cache[var]
+
+        bin_ = bin(int(var))[2:].zfill(16)
         print(bin_)
         return bin_
     else:
@@ -84,6 +87,33 @@ def parse_line(line):
         return bin_code
 
 
-lines = load_asm_and_clean()
-for l in lines:
-    parse_line(l)
+def parse_file(file):
+    lines = load_asm_and_clean(file)
+    output = []
+    lines, cache = save_labels(lines)
+
+    for l in lines:
+        parse_line(l, cache)
+
+    return output
+
+def save_labels(lines):
+    cache = {}
+    new_lines = []
+    for idx, line in enumerate(lines):
+        if line.startswith('(') and line.endswith(')'):
+            label = line[1:-1]
+            cache[label] = idx
+        else:
+            new_lines.append(line)
+    
+    cache = {k: v - i for i, (k, v) in enumerate(cache.items())}
+    return new_lines,cache
+
+def main():
+    file = './max/Max.asm'
+    output = parse_file(file)
+    for line in output:
+        print(line)
+
+main()
